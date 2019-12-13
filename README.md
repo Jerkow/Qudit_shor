@@ -1,1 +1,1 @@
-# Shor_Ternary
+# Shor_Multivalued
