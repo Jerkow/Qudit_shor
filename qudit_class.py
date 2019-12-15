@@ -14,14 +14,17 @@ class qudit:
             amp = numpy.asarray(amp)    #amp is received as a tuple, converts to numpy array
             norm_amp = numpy.array([i/cmath.sqrt(sum(numpy.multiply(amp,amp))) for i in amp]) #normalize the state
             self.values = norm_amp
+
     ###############################################
     #       THIS PHASE PART IS NOT WORKING WELL   #
     #       NEITHER CHANGING ANYTHING             #
     ###############################################
+
         if phase and len(amp) == len(phase):
             phases = numpy.array([cmath.exp(2*cmath.pi*j*i) for i in phase])        #receive the phase angle of each state (state in the form e^(2*pi*i*theta)
             self.phases = phases
             self.total = numpy.multiply(self.phases,self.values)                    #state in the form: e^(2*pi*i*theta)*|ket>
+
     ###############################################################################
     #       THE HADAMARD GATE ALWAYS TAKES ONE STATE AND MAPS TO ALL THE OTHERS   #
     #       THE ONLY THING THAT CHANGES IS THE PHASE, THATS WHY NUMPY.ONES        #
@@ -40,24 +43,19 @@ class qudit:
             aux_phases_2 = numpy.zeros(len(self.values))                #array that will store how each of the given basis states will contribute to the fase of the final states' superposition
             for counter in range(len(self.values)):
                 aux_phases_2[counter] = self.phases[indices[k]]*self.phases[counter]*cmath.exp(2*cmath.pi*j*counter*indices[k]/len(self.values)) #funcionando
-                # print('self.phase[indices[k]] is: {}'.format(self.phases[indices[k]].round(decimals = 3)))
-                # print('self.phase[counter] is: {}'.format(self.phases[counter].round(decimals = 3)))
-                # print('phase due to Hadamard is: {}'.format(cmath.exp(2*cmath.pi*j*counter*indices[k]/len(self.values))))
-                # print('wait \n')
             aux_phases += aux_phases_2 #"funcionando"
-            #aux_phases = numpy.multiply(aux_phases,aux_phases_2)
-            #print('aux_phases = {} \n wait \n'.format(aux_phases.round(decimals = 3)))
         self.phases = aux_phases #phase of all the states
         self.values = numpy.ones(len(self.values))/cmath.sqrt(len(self.values))  #superposition of all the states
         self.total = numpy.multiply(self.phases,self.values)/cmath.sqrt(len(indices)) #sqrt(len(indices)) because it represents how many times the Hadamard gate was applied hence, how many times we will have the same basis state with different phases, EX.: |0>[e^(2*pi*i*theta1) + e^(2*pi*i*theta1)], so we must "normalize the basis state" cause it will be summed N times (where N is the number of elements != than 0 in the given state)
 
 
-
-q1 = qudit(amp = (1,1,1,0), phase = (0,0,0,0))   #phase is not changing anything
+q1 = qudit(amp = (1,1,1,1), phase = (0,0,0,0))   #phase is not changing anything
 print("values: {}".format(q1.values.round(decimals=2)))         #initial values of q1
 print("phases: {}".format(q1.phases.round(decimals=2)))
 print("total: {}".format(q1.total.round(decimals=2)))
+
 q1.hadamard()
+
 print("Hadamard Gate applied")
 print("values: {}".format(q1.values.round(decimals=2)))
 print("phases: {}".format(q1.phases.round(decimals=2)))
