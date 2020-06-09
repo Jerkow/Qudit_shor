@@ -40,6 +40,7 @@ class qudit:
         self.probability = np.array([(abs(i))**2 for i in self.total])
         self.norm = np.sqrt(sum(self.probability))
 
+
     ###############################################################################
     #       THE HADAMARD GATE ALWAYS TAKES ONE STATE AND MAPS TO ALL THE OTHERS   #
     #       THE ONLY THING THAT CHANGES IS THE PHASE, THATS WHY NUMPY.ONES        #
@@ -54,6 +55,7 @@ class qudit:
             self.values[k] = np.abs(ak)
             self.phases[k] = np.exp(j*np.angle(ak))
         self.normalize()
+
 
     def measure(self):
          measure = np.random.choice([i for i in range(len(self.values))], p = self.probability)
@@ -154,6 +156,7 @@ def adder(r1,r2):
     r2.qft_1()
     return r2
 
+
 def euclide_etendu(a,b):
     r,u,v,r1,u1,v1 = a,1,0,b,0,1
     while r1!=0:
@@ -183,3 +186,4 @@ r2 = int_to_qudits(20,4,3)
 for i in range(r1.length):
     print(r1.register[i].values)
 '''
+
