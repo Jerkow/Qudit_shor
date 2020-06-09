@@ -47,6 +47,11 @@ def GCADDC(e,phia,b,signe=1):
     return phia
 
 def CADDC(e,phia,c,b,signe=1):
+    """
+    Controled adder function: returns the state a+b iff the control qubit (e) is in state c
+    phia is the fourier transform of register a
+    """
+
     q = len(phia.register)
     d = phia.register[0].dimension
     b_base_d = qu.base10_to_d(b,d,q)
@@ -56,6 +61,35 @@ def CADDC(e,phia,c,b,signe=1):
         phia.register[i-1] = qu.c_rot(e,phia.register[i-1],signe*2*np.pi*d**(-q+i-1)*bi,c)
     return phia
 
+
+def decode_register(reg, q):
+    """ Returns in decimal form the number represented by the q-qudit register reg """
+    sum = 0
+
+    for i in range(q):
+        sum += 4**(q-1-i)*np.argwhere(reg.register[i].values == 1)[0][0]
+    #return sum([4**(q-1-i)*np.argwhere(reg.register[i].values == 1)[0][0] for i in range(q)]), sum
+    return sum
+'''
+phia = qu.int_to_qudits(0,4,3)
+phia.register[1].values = [1,1,1,0]
+phia.register[1].normalize()
+# phia.register[2].values = [1,1,0,0]
+# phia.register[2].normalize()
+for i in range(phia.length):
+    print(phia.register[i].values)
+
+print("")
+phia.qft()
+e = qu.qudit(4,1)
+c = 0
+b = 13
+phia_b = CADDC(e, phia, c, b, 1)
+phia_b.qft_1()
+for i in range(phia_b.length):
+    print(phia_b.register[i].values)'''
+
+#print(decode_register(phia_b, 3))
 
 # B = MULC(x,2)
 
@@ -67,16 +101,18 @@ def CADDC(e,phia,c,b,signe=1):
 # q = int(np.log(n)/np.log(d))+2
 # print(q,'qudits de dimension',d,'sont utilisés')
 # x = qu.int_to_qudits(n,d,q)
-# b = 3
-# # e = qu.qudit(4,3)
-# # phia = qu.register([qu.qudit(4,i) for i in range(3)])
-# # print([a.probability.round(decimals=4) for a in phia.register])
-# # phia.qft()
-# # c = 3
-# #
-# # X = CADDC(e,phia,c,b)
-# #
-# # X.qft_1()
+# b = 12
+# e = qu.qudit(4,3)
+# phia = qu.register([qu.qudit(4,i) for i in range(3)]) # corresponds to a=6
+# print([a.probability.round(decimals=4) for a in phia.register])
+# phia.qft()
+# c = 3
+#
+# X = CADDC(e,phia,c,b)
+#
+# X.qft_1()
+# for i in range(X.length):
+#     print(X.register[i].values)
 #
 #
 # # X= GCADDC(e,phia,b)
@@ -137,22 +173,48 @@ def GCADDC2(e,phia,b,signe=1):
     return phia
 
 def CADDC2(e,x,c,b,signe=1):
-        d = x.register[0].dimension
-        q = len(x.register)
-        # self.qft() #prepare the register
-        #print('inital qft: ', [i.total.round(decimals = 3) for i in self.register])
-        for qudit in range(q):
-            phase = np.ones(d, dtype=complex)
-            bi_liste = []
-            for k in range(qudit, len(b.register)):
-                state = np.where(b.register[k].probability > 0.001)[0][0]
-                bi_liste.append(state)
-            bi = qu.base_d_to10(bi_liste,d)
-                    # phase[m] = phase[m]*np.exp(qu.j*2*np.pi*m*state/(dim**(k)))
-            x.register[qudit] = qu.c_rot(e,x.register[qudit],signe*2*np.pi*d**(-q+qudit)*bi,c)
-            #print('phase is : ', phase.round(decimals = 3))
-            x.register[qudit].total = np.multiply(x.register[qudit].total,phase)
-        return x
+    """ Controled addition of two qudit registers. e = control, x and b = numbers to be added,  """
+    d = x.register[0].dimension
+    q = len(x.register)
+    # self.qft() #prepare the register
+    #print('inital qft: ', [i.total.round(decimals = 3) for i in self.register])
+    for qudit in range(q):
+        phase = np.ones(d, dtype=complex)
+        bi_liste = []
+        for k in range(qudit, len(b.register)):
+            state = np.where(b.register[k].probability > 0.001)[0][0]
+            bi_liste.append(state)
+        print("bi_liste: ", bi_liste)
+        bi = qu.base_d_to10(bi_liste,d)
+                # phase[m] = phase[m]*np.exp(qu.j*2*np.pi*m*state/(dim**(k)))
+        x.register[qudit] = qu.c_rot(e,x.register[qudit],signe*2*np.pi*d**(-q+qudit)*bi,c)
+        #print('phase is : ', phase.round(decimals = 3))
+        x.register[qudit].total = np.multiply(x.register[qudit].total,phase)
+    return x
+
+phia = qu.int_to_qudits(0,4,3)
+phia.register[1].values = [1,1,0,0]
+phia.register[1].normalize()
+phia.register[2].values = [1,1,0,0]
+phia.register[2].normalize()
+e = qu.qudit(4,1)
+c = 0
+b = qu.int_to_qudits(11,4,3)
+
+for i in range(phia.length):
+    print(phia.register[i].values)
+print("")
+for i in range(b.length):
+    print(b.register[i].values)
+print("")
+
+phia.qft()
+phia_b = CADDC2(e, phia, c, b, 1)
+phia_b.qft_1()
+for i in range(phia_b.length):
+    print(phia_b.register[i].values)
+
+
 
 # d = 4
 # n = 12
@@ -232,8 +294,14 @@ def U(a,x):
         res = MULC2(res,Liste[k])
     return x,res
 
-UX = U(a,x)
-
+#UX = U(a,x)
 # print([i.values for i in UX[1].register])
+
+
+
+
+
+
+
 
 
